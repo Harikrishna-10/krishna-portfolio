@@ -1,103 +1,307 @@
-import Image from "next/image";
+"use client"
+import React, { useEffect, useState, useRef, JSX } from 'react';
 
-export default function Home() {
+// Define the type for the status message object
+interface StatusMessage {
+  text: string;
+  color: string;
+}
+
+// Define the types for the skills object
+interface Skills {
+  frontend: string[];
+  backend: string[];
+  languagesTools: string[];
+}
+
+// Main App component
+const App: React.FC = () => {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
+  const [statusMessage, setStatusMessage] = useState<StatusMessage | null>(null);
+
+  // Intersection Observer to handle scroll animations
+  useEffect(() => {
+    const observerOptions = {
+      root: null,
+      rootMargin: '0px',
+      threshold: 0.1
+    };
+
+    const observer = new IntersectionObserver((entries, observer) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, observerOptions);
+
+    document.querySelectorAll('.section-header, .animated-card').forEach(element => {
+      observer.observe(element);
+    });
+  }, []);
+
+  const toggleMobileMenu = (): void => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>): void => {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const name = (form.elements.namedItem('name') as HTMLInputElement).value;
+    const email = (form.elements.namedItem('email') as HTMLInputElement).value;
+    const message = (form.elements.namedItem('message') as HTMLTextAreaElement).value;
+
+    if (!name || !email || !message) {
+      setStatusMessage({ text: 'Please fill out all fields.', color: 'text-red-500' });
+      return;
+    }
+
+    // Simulate form submission
+    setStatusMessage({ text: 'Sending message...', color: 'text-yellow-500' });
+
+    setTimeout(() => {
+      setStatusMessage({ text: 'Message sent successfully!', color: 'text-green-500' });
+      form.reset();
+    }, 2000);
+  };
+
+  const skills: Skills = {
+    frontend: ['React.js', 'Next.js', 'Redux', 'SCSS, HTML5, CSS3', 'Tailwind CSS', 'Bootstrap'],
+    backend: ['Node.js', 'Express.js', 'REST API Integration'],
+    languagesTools: ['JavaScript', 'TypeScript', 'Python', 'MySQL', 'Git', 'Bitbucket', 'Jira']
+  };
+
+  const renderSkillBadges = (skillArray: string[]): JSX.Element => (
+    <div className="flex flex-wrap gap-2">
+      {skillArray.map((skill, index) => (
+        <span key={index} className="bg-teal-600 text-xs font-semibold px-2.5 py-1 rounded-full text-white">
+          {skill}
+        </span>
+      ))}
+    </div>
+  );
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="antialiased font-inter bg-[#121212] text-[#E0E0E0] overflow-x-hidden">
+      <style>{`
+        .section-header {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        .section-header.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .animated-card {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        .animated-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+      `}</style>
+      
+      {/* Header & Navigation */}
+      <header className="bg-gray-900 fixed top-0 inset-x-0 z-50 shadow-lg">
+        <nav className="container mx-auto px-4 py-4 flex justify-between items-center">
+          <a href="#" className="text-2xl font-bold text-teal-400">Hari.</a>
+          <div className="space-x-4 hidden md:block">
+            <a href="#about" className="hover:text-teal-400 transition-colors">About</a>
+            <a href="#skills" className="hover:text-teal-400 transition-colors">Skills</a>
+            <a href="#experience" className="hover:text-teal-400 transition-colors">Projects</a>
+            <a href="#education" className="hover:text-teal-400 transition-colors">Education</a>
+            <a href="#contact" className="hover:text-teal-400 transition-colors">Contact</a>
+          </div>
+          <button id="mobile-menu-button" onClick={toggleMobileMenu} className="md:hidden text-white">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16m-4 6h4"></path>
+            </svg>
+          </button>
+        </nav>
+        {/* Mobile Menu */}
+        {isMobileMenuOpen && (
+          <div id="mobile-menu" className="md:hidden bg-gray-900 px-4 py-2">
+            <a href="#about" onClick={toggleMobileMenu} className="block py-2 hover:text-teal-400 transition-colors border-b border-gray-700">About</a>
+            <a href="#skills" onClick={toggleMobileMenu} className="block py-2 hover:text-teal-400 transition-colors border-b border-gray-700">Skills</a>
+            <a href="#experience" onClick={toggleMobileMenu} className="block py-2 hover:text-teal-400 transition-colors border-b border-gray-700">Projects</a>
+            <a href="#education" onClick={toggleMobileMenu} className="block py-2 hover:text-teal-400 transition-colors border-b border-gray-700">Education</a>
+            <a href="#contact" onClick={toggleMobileMenu} className="block py-2 hover:text-teal-400 transition-colors border-b border-gray-700">Contact</a>
+          </div>
+        )}
+      </header>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
+      {/* Hero Section */}
+      <section className="min-h-screen flex items-center justify-center text-center px-4 py-16">
+        <div className="max-w-3xl">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white mb-4 leading-tight">
+            Hi, I'm <span className="text-teal-400">Harikrishna</span>
+          </h1>
+          <p className="text-lg sm:text-xl md:text-2xl text-gray-300 mb-8">
+            A Full-Stack Developer with a passion for building responsive, high-performance web applications.
+          </p>
+          <a href="#contact" className="bg-teal-500 hover:bg-teal-600 transition-colors text-white font-semibold py-3 px-8 rounded-full shadow-lg transform hover:scale-105">
+            Get in Touch
           </a>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+      </section>
+
+      {/* About Section */}
+      <section id="about" className="py-20 px-4">
+        <div className="container mx-auto max-w-5xl">
+          <h2 className="text-3xl sm:text-4xl font-bold text-center text-white mb-12 section-header">About Me</h2>
+          <div className="flex flex-col md:flex-row items-center justify-center md:space-x-8">
+            <div className="w-48 h-48 rounded-full overflow-hidden mb-8 md:mb-0">
+              <img src="https://placehold.co/192x192/475569/E2E8F0?text=HK" alt="Harikrishna K" className="w-full h-full object-cover" />
+            </div>
+            <div className="md:w-2/3 text-lg text-gray-300 animated-card">
+              <p className="mb-4">
+                I am a full-stack developer with over 2 years of experience crafting dynamic and scalable web solutions. My expertise spans from building responsive user interfaces with <i>React.js</i> and <i>Next.js</i> to developing robust backend systems with <i>Node.js</i> and <i>Express.js</i>.
+              </p>
+              <p>
+                I am proficient in database management using <i>MySQL</i> and adept at implementing REST APIs, ensuring seamless data flow. I thrive in Agile environments, committed to writing clean, maintainable code and collaborating with teams to deliver exceptional digital experiences.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Skills Section */}
+      <section id="skills" className="py-20 px-4 bg-gray-900">
+        <div className="container mx-auto max-w-5xl">
+          <h2 className="text-3xl sm:text-4xl font-bold text-center text-white mb-12 section-header">Skills</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {/* Frontend */}
+            <div className="bg-gray-800 p-6 rounded-lg shadow-md animated-card">
+              <h3 className="text-xl font-semibold text-teal-400 mb-4">Frontend</h3>
+              {renderSkillBadges(skills.frontend)}
+            </div>
+            {/* Backend */}
+            <div className="bg-gray-800 p-6 rounded-lg shadow-md animated-card">
+              <h3 className="text-xl font-semibold text-teal-400 mb-4">Backend</h3>
+              {renderSkillBadges(skills.backend)}
+            </div>
+            {/* Languages & Tools */}
+            <div className="bg-gray-800 p-6 rounded-lg shadow-md animated-card">
+              <h3 className="text-xl font-semibold text-teal-400 mb-4">Languages & Tools</h3>
+              {renderSkillBadges(skills.languagesTools)}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Experience Section */}
+      <section id="experience" className="py-20 px-4">
+        <div className="container mx-auto max-w-5xl">
+          <h2 className="text-3xl sm:text-4xl font-bold text-center text-white mb-12 section-header">Projects</h2>
+          <div className="space-y-12">
+            {/* Associate Engineer */}
+            <div className="bg-gray-800 p-6 rounded-lg shadow-md animated-card">
+              <h3 className="text-2xl font-semibold text-white mb-2">Associate Engineer - Full Stack Developer</h3>
+              <p className="text-sm text-gray-400 mb-4">Dbiz.ai | Oct 2024 - Present</p>
+              <p className="text-lg text-teal-400 font-medium mb-2">Project: Real Estate Property Listing Website</p>
+              <p className="text-gray-300 mb-4">
+                A platform for listing, filtering, and managing real estate properties for customers and agents. Resolved critical frontend issues and enhanced application stability. Addressed customer-reported issues, reducing support tickets by 25%.
+              </p>
+              <div className="flex flex-wrap gap-2 mb-4">
+                <span className="bg-teal-600 text-xs font-semibold px-2.5 py-1 rounded-full text-white">Next.js</span>
+                <span className="bg-teal-600 text-xs font-semibold px-2.5 py-1 rounded-full text-white">TypeScript</span>
+                <span className="bg-teal-600 text-xs font-semibold px-2.5 py-1 rounded-full text-white">Datadog</span>
+                <span className="bg-teal-600 text-xs font-semibold px-2.5 py-1 rounded-full text-white">Jira</span>
+                <span className="bg-teal-600 text-xs font-semibold px-2.5 py-1 rounded-full text-white">Azure DevOps</span>
+                <span className="bg-teal-600 text-xs font-semibold px-2.5 py-1 rounded-full text-white">Salesforce</span>
+              </div>
+            </div>
+            
+            {/* Junior Engineer */}
+            <div className="bg-gray-800 p-6 rounded-lg shadow-md animated-card">
+              <h3 className="text-2xl font-semibold text-white mb-2">Junior Engineer - Frontend Developer</h3>
+              <p className="text-sm text-gray-400 mb-4">Dbiz.ai | Jan 2024 - Oct 2024</p>
+              <p className="text-lg text-teal-400 font-medium mb-2">Project: Review Management Platform</p>
+              <p className="text-gray-300 mb-4">
+                A tool for collecting, displaying, and responding to customer reviews across various platforms. Contributed to building reusable <i>React</i> components and implemented <i>Redux</i> for efficient and scalable state management.
+              </p>
+              <div className="flex flex-wrap gap-2 mb-4">
+                <span className="bg-teal-600 text-xs font-semibold px-2.5 py-1 rounded-full text-white">React.js</span>
+                <span className="bg-teal-600 text-xs font-semibold px-2.5 py-1 rounded-full text-white">Redux</span>
+                <span className="bg-teal-600 text-xs font-semibold px-2.5 py-1 rounded-full text-white">TypeScript</span>
+                <span className="bg-teal-600 text-xs font-semibold px-2.5 py-1 rounded-full text-white">SCSS</span>
+                <span className="bg-teal-600 text-xs font-semibold px-2.5 py-1 rounded-full text-white">Bitbucket</span>
+                <span className="bg-teal-600 text-xs font-semibold px-2.5 py-1 rounded-full text-white">Storybook</span>
+                <span className="bg-teal-600 text-xs font-semibold px-2.5 py-1 rounded-full text-white">Ant Design</span>
+                <span className="bg-teal-600 text-xs font-semibold px-2.5 py-1 rounded-full text-white">Jira</span>
+              </div>
+            </div>
+
+            {/* Graduate Engineer */}
+            <div className="bg-gray-800 p-6 rounded-lg shadow-md animated-card">
+              <h3 className="text-2xl font-semibold text-white mb-2">Graduate Engineer (JOE) - Training Phase</h3>
+              <p className="text-sm text-gray-400 mb-4">Dbiz.ai | Jul 2023 - Jan 2024</p>
+              <p className="text-gray-300 mb-4">
+                Completed hands-on training in <i>JavaScript</i>, <i>React.js</i>, <i>Redux</i>, and Git, building over 3 mini-projects to simulate real-world scenarios. Learned to work in an Agile environment and use version control tools.
+              </p>
+            </div>
+
+            {/* Freelance Web Designer */}
+            <div className="bg-gray-800 p-6 rounded-lg shadow-md animated-card">
+              <h3 className="text-2xl font-semibold text-white mb-2">Freelance Web Designer</h3>
+              <p className="text-sm text-gray-400 mb-4">Self-employed | Apr 2023 -  2023</p>
+              <p className="text-gray-300 mb-4">
+                Developed and customized WordPress sites using <i>HTML</i>, <i>CSS</i>, and Elementor. Collaborated with senior team members to deliver high-quality projects.
+              </p>
+              <div className="flex flex-wrap gap-2 mb-4">
+                <span className="bg-teal-600 text-xs font-semibold px-2.5 py-1 rounded-full text-white">HTML</span>
+                <span className="bg-teal-600 text-xs font-semibold px-2.5 py-1 rounded-full text-white">CSS</span>
+                <span className="bg-teal-600 text-xs font-semibold px-2.5 py-1 rounded-full text-white">JavaScript</span>
+                <span className="bg-teal-600 text-xs font-semibold px-2.5 py-1 rounded-full text-white">Figma</span>
+                <span className="bg-teal-600 text-xs font-semibold px-2.5 py-1 rounded-full text-white">Canva</span>
+                <span className="bg-teal-600 text-xs font-semibold px-2.5 py-1 rounded-full text-white">WordPress</span>
+                <span className="bg-teal-600 text-xs font-semibold px-2.5 py-1 rounded-full text-white">Elementor</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Education Section */}
+      <section id="education" className="py-20 px-4 bg-gray-900">
+        <div className="container mx-auto max-w-5xl">
+          <h2 className="text-3xl sm:text-4xl font-bold text-center text-white mb-12 section-header">Education</h2>
+          <div className="bg-gray-800 p-6 rounded-lg shadow-md animated-card">
+            <h3 className="text-2xl font-semibold text-white mb-2">Sathyabama Institute of Science and Technology, Chennai</h3>
+            <p className="text-sm text-gray-400 mb-2">Bachelor of Engineering - Computer Science and Engineering</p>
+            <p className="text-sm text-gray-400">July 2019 - July 2023</p>
+          </div>
+        </div>
+      </section>
+
+      {/* Contact Section */}
+      <section id="contact" className="py-20 px-4 bg-gray-900">
+        <div className="container mx-auto max-w-3xl text-center">
+          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-12 section-header">Contact Me</h2>
+          <form id="contact-form" onSubmit={handleFormSubmit} className="space-y-6 animated-card">
+            <input type="text" id="name" name="name" placeholder="Your Name" className="w-full p-4 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500" />
+            <input type="email" id="email" name="email" placeholder="Your Email" className="w-full p-4 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500" />
+            <textarea id="message" name="message" rows={5} placeholder="Your Message" className="w-full p-4 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500"></textarea>
+            <button type="submit" className="w-full bg-teal-500 hover:bg-teal-600 transition-colors text-white font-semibold py-3 rounded-lg shadow-lg transform hover:scale-105">
+              Send Message
+            </button>
+          </form>
+          <div className={`mt-6 text-center font-medium ${statusMessage?.color}`}>
+            {statusMessage?.text}
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-gray-900 py-6 text-center text-gray-400">
+        <p>Designed and Developed by Harikrishna K</p>
       </footer>
     </div>
   );
-}
+};
+
+export default App;
